@@ -144,7 +144,7 @@ for k in V_fixed:
     
 # SOR Solver Implementation
 
-omega = 1.5  # Over-relaxation factor, typically between 1 and 2
+omega = 1.9  # Over-relaxation factor, typically between 1 and 2
 max_iter = 5000
 convergence_threshold = 1e-6 
 
@@ -191,8 +191,6 @@ print(f'Charge Q = {Q_Rx} C on the receiving electrode Rx')
 W = 0.5 * (Tx.V * Q_Tx + Rx.V * Q_Rx)
 C = 2 * W / (Tx.V - Rx.V)**2
 print(f'Mutual capacitance C = {C} F between Tx and Rx')
-
-# needs fixing !!!!!
 
 # Plot potential field
 plt.figure(figsize=(8, 6))
