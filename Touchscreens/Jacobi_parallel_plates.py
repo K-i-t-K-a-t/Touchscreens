@@ -12,8 +12,8 @@ EPS_air = EPS_ZERO
 
 # SETTINGS
 
-nx = 90
-ny = 90
+nx = 30
+ny = 30
 N = nx * ny
 
 # GRID SETUP
@@ -60,8 +60,8 @@ class Electrode:
                         del V_fixed[idx(y, x)]
                         
 for i in range(nx):
-    V_fixed[idx(0, i)] = 0.0
-    V_fixed[idx(ny - 1, i)] = 0.0
+    V_fixed[idx(0, i)] = 1.0
+    V_fixed[idx(ny - 1, i)] = 0.5
 for j in range(ny):
     V_fixed[idx(j, 0)] = 0.0
     V_fixed[idx(j, nx - 1)] = 0.0
@@ -75,10 +75,10 @@ glass = Electrode((nx//10, ny), (nx//2, ny//2), 5*EPS_ZERO, 0.0, False)
 
 grid = create_grid(nx,ny)
 
-Tx.place(grid)
-Rx.place(grid)
-finger.place(grid)
-glass.place(grid)
+# Tx.place(grid)
+# Rx.place(grid)
+# finger.place(grid)
+# glass.place(grid)
 
 # LAPLACIAN SOLVING
 
@@ -97,7 +97,7 @@ b_old = np.zeros(N)
 for k in V_fixed:
     b_old[k] = V_fixed[k]
 
-for m in range(1000):
+for m in range(5000):
     
     b_new = np.copy(b_old)
     for i in range(nx):
@@ -140,7 +140,7 @@ eps_avg = 0.25 * (
 
 E_crop = E_mag[:-1, :-1] # Then crop E_mag to match
 u = 0.5 * eps_avg * E_crop**2 # Energy density
-W = np.sum(u) * dx * dy # Total energy
+W = np.sum(u) * dx * dy * dz # Total energy
 V0 = 0.5 # Potential difference between Tx and Rx
 C = 2 * W / V0**2
 print(f"mutual capacitance C = {C} between Tx and Rx.")
