@@ -122,10 +122,10 @@ grid = create_grid(nx,ny)
 
 Tx.place(grid)
 Rx.place(grid)
-# finger.place(grid)
+finger.place(grid)
 glass.place(grid)
 
-# LAPLACIAN SOLVING
+# LAPLACIAN SOLVING INITIALISATION
 
 dx = 90e-3/nx
 dy = 90e-3/ny
@@ -141,33 +141,38 @@ b_old = np.zeros(N)
 
 for k in V_fixed:
     b_old[k] = V_fixed[k]
-
-for m in range(1000):
     
-    b_new = np.copy(b_old)
-    for i in range(nx):
-        for j in range(ny):
-            k = idx(i, j)
-            if k in V_fixed:
+# SOR Solver Implementation
+
+omega = 1.5  # Over-relaxation factor, typically between 1 and 2
+max_iter = 5000
+convergence_threshold = 1e-6 
+
+# Initialize the solution grid
+V = np.copy(b_old).reshape(nx, ny)  # Use the initial guess for the potential
+
+for iteration in range(max_iter):
+    V_old = np.copy(V)
+    
+    for i in range(1, nx-1):
+        for j in range(1, ny-1):
+            # Skip fixed boundary points
+            if idx(i, j) in V_fixed:
                 continue
-            sum_neighbors = 0
-            count = 0
-            for di, dj in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                ni, nj = i + di, j + dj
-                if 0 <= ni < nx and 0 <= nj < ny:
-                    nk = idx(ni, nj)
-                    sum_neighbors += b_old[nk]
-                    count += 1
-            b_new[k] = sum_neighbors / count
-    diff = np.max(np.abs(b_new - b_old))
-    if diff < 1e-4:
-        print(f"Converged after {m} iterations.")
+            
+            # Apply the SOR update rule
+            V[i, j] = (1 - omega) * V[i, j] + omega * 0.25 * (
+                V[i-1, j] + V[i+1, j] + V[i, j-1] + V[i, j+1]
+            )
+    
+    # Check for convergence
+    diff = np.max(np.abs(V - V_old))
+    if diff < convergence_threshold:
+        print(f"SOR Converged after {iteration} iterations.")
         break
-    b_old = b_new
 
-# explain clearly
-
-V = b_old.reshape(nx, ny)
+# After convergence, V contains the solution for the potential
+b_old = V.flatten()
                 
 # Compute electric field
 Ey, Ex = np.gradient(-V, dy, dx)
